@@ -87,6 +87,7 @@ class cardiac(oscillator):
 
         super().__init__(dt, title, maxTime)
         self.genSensitivityWindow(sensitivityWinParam)
+
         self.c = np.zeros_like(self.t)
         self.c[0] = c0
         self.c_unperturbed = np.zeros_like(self.t)
@@ -113,28 +114,56 @@ class cardiac(oscillator):
         
     #############################################################
 
-    def simulateUnperturbed(self):
+    def simulateUncoupled(self):
+
+        self.u = ap()
+
+        
         for i in range(1, self.c.size):
             self.stepTime(i, self.c_unperturbed, 0)
 
 
     #############################################################
             
-    def simulatePerturbed(self, epsilon):
+    def simulateCoupled(self, epsilon):
         for i in range(1, self.c.size):
             self.stepTime(i, self.c, epsilon[i])
 
             
     #############################################################
 
-    def stepTime(self, i, c, epsilon):
+    def stepTime(self, i, c, epsilon):  # Make this a lambda func
 
         c[i] = (1 - self.k_leak) * c[i-1] + self.k_constant + numpy.random.normal(0, self.k_random_std) + self.sensitivity(c[i-1]) * epsilon * self.k_coup
         if c[i] > 1:
+            self.triggerAP()
             c[i] = 0
+
+
+    #############################################################
+    
+    def triggerAP(self, i, c):
+
+
+
+#################################################################
+#################################################################
+#################################################################
+
+class ap(object):
+    # ap for predetermined coupling function.  for cardiac-cardiac coupling, need
+    # to modify.
+
+    def __init__(self, card, epsilon=np.zeros_like(card.t)):
+        # cell is a cardiac
+
+    self.stepTime = card.stepTime
+
+
+    def simulate(self):
+        for i in range(1, self.t.size):
+            self.stepTime(i, self.c, epsilon[i])
         
-
-
 #################################################################
 #################################################################
 #################################################################
