@@ -85,14 +85,14 @@ class cardiac(oscillator):
         # k_coup:  The coupling strength.  Scaled based on desired peak coupling
         self.k_coup = dt * peakCouplingRate / peakEpsilon
 
+        self.c0 = c0
+        self.contractionDelay = contractionDelay
+        self.actionPotentialLength = actionPotentialLength
+
         super().__init__(dt, title, maxTime)
         self.genSensitivityWindow(sensitivityWinParam)
 
-        self.c = np.zeros_like(self.t)
-        self.c[0] = c0
-        self.c_unperturbed = np.zeros_like(self.t)
-        self.c_unperturbed[0] = c0
-        self.simulateUnperturbed()
+                
 
 
     #############################################################
@@ -132,18 +132,12 @@ class cardiac(oscillator):
             
     #############################################################
 
-    def stepTime(self, i, c, epsilon):  # Make this a lambda func
+    def stepTime(self):  # Make this a lambda func
 
-        c[i] = (1 - self.k_leak) * c[i-1] + self.k_constant + numpy.random.normal(0, self.k_random_std) + self.sensitivity(c[i-1]) * epsilon * self.k_coup
-        if c[i] > 1:
-            self.triggerAP()
-            c[i] = 0
-
+        return lambda c, epsilon: (1 - self.k_leak) * c + self.k_constant + numpy.random.normal(0, self.k_random_std) + self.sensitivity(c) * epsilon * self.k_coup
 
     #############################################################
     
-    def triggerAP(self, i, c):
-
 
 
 #################################################################
@@ -154,16 +148,56 @@ class ap(object):
     # ap for predetermined coupling function.  for cardiac-cardiac coupling, need
     # to modify.
 
-    def __init__(self, card, epsilon=np.zeros_like(card.t)):
+    def __init__(self, cell, epsilon=0):
         # cell is a cardiac
 
-    self.stepTime = card.stepTime
+        self.epsilon = epsilon
+        if type(self.epsilon)==int:
+            self.epsilon = np.ones_like(cell.t) * self.epsilon
+
+        self.contractionDelay = cell.contractionDelay
+        self.actionPotentialLength = cell.actionPotentialLength
+        self.dt = cell.dt
+        self.t = cell.t
+        self.c = np.zeros_like(self.t)
+        self.stepTime = cell.stepTime()
+        # now self.stepTime used to march c:
+        # c[i+1] = self.stepTime(c[i], epsilon[i])
+
+        self.i = 0
+        self.trig = []
+        self.ix = []
+        self.simulate()
+
+        self.ix = np.asarray(self.ix)
 
 
     def simulate(self):
-        for i in range(1, self.t.size):
-            self.stepTime(i, self.c, epsilon[i])
+        while self.t[self.i] < self.t[-1]:
+            self.i += 1
+            self.c[self.i] = self.stepTime(self.c[self.i-1], self.epsilon[self.i-1])
+
+            if self.c[self.i] > 1:
+                self.trig.append(self.t[self.i])
+                self.triggerAP()
+
+
+    def triggerAP(self):
+
+        if self.t[-1] - self.t[self.i] > self.contractionDelay:
+            self.ix.append(self.trig[-1] + self.contractionDelay)
+
+        if self.t[-1] - self.t[self.i] > self.actionPotentialLength:
+            self.c[self.i : self.i + int(self.actionPotentialLength/self.dt)] = 2
+            self.i += int(self.actionPotentialLength/self.dt) 
+        else:
+            self.c[self.i:] = 2
+            self.i = self.t.size-1
+
         
+
+
+            
 #################################################################
 #################################################################
 #################################################################
@@ -175,7 +209,10 @@ class substrate(oscillator):
         self.omega = omega
         super().__init__(dt, title, maxTime)
 
+        self.ix = []
         self.genFunc(functionParameters)
+
+        self.findEvents()
         
 
     ######################################################
@@ -183,11 +220,23 @@ class substrate(oscillator):
     def genFunc(self, functionParameters):
 
         if functionParameters['funcType'] == 'sinusoidal':
+
             minStrain = functionParameters['minStrain']
             maxStrain = functionParameters['maxStrain']
             phi0 = functionParameters['phi0']
             
             self.epsilon = 0.5*(maxStrain-minStrain) * (np.sin(self.omega*self.t + phi0) + 1)
+
+            #for i in range(0,self.t.size-1):
+
+    def findEvents(self):
+
+        de = np.diff(self.epsilon)
+        for i in range(0, de.size-1):
+            if de[i] < 0 and de[i+1] >=0:
+                print(i)
+                self.ix.append(self.t[i])
+        self.ix = np.asarray(self.ix)
     
 
 
