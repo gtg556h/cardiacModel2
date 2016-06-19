@@ -125,14 +125,6 @@ subEventTimeShift = np.zeros(len(cellEvents))
 params = {'cellEvents':cellEvents, 'subEvents':subEvents, 'voltage':voltage, 'startTime':startTime, 'dt':dt, 'useAvailableSubstrateEvents':useAvailableSubstrateEvents, 'nominalSubFreq':nominalSubFreq, 'reactionTime':reactionTime, 'subEventTimeShift':subEventTimeShift, 'maxStrain':maxStrain, 'cellNaturalFreq':cellNaturalFreq, 'title':title, 'experimentTitle':experimentTitle}
 
 
-
-
-
-
-    
-
-
-
 s1 = experimentLib.experiment(params)
 
 u0 = s1.genUnstretchedMeasurement(0)
@@ -140,9 +132,9 @@ m1 = s1.genStretchedMeasurement(1)
 m2 = s1.genStretchedMeasurement(2)
 
 
+ol.animateModel(sub1.epsilon, coupled1.c, DF=500)
 
-
-
+#sub1.epsilon
 
 
 

@@ -2,6 +2,7 @@ import numpy as np
 import pdb
 import matplotlib.pyplot as plt
 import numpy.random
+import matplotlib.animation as animation
 
 ###########################################################
 ###########################################################
@@ -268,6 +269,60 @@ def relativePhase(self, subTheta, subIx):
 # Model animations:
 
 
-def animateModel(epsilon, c):
+def animateModel(epsilon, c, uc=0, DF=10, plotFrac=1):
 
-    return 1
+
+    dx=.001
+
+    nFrames = np.int(np.floor(epsilon.size/DF*plotFrac))
+    
+    fig = plt.figure(figsize=[8,6])
+    ax = plt.axes()
+
+    cellRadius = 20
+    ax.set_xlim([-1.2*np.max(epsilon), 1.2*np.max(epsilon)])
+    ax.set_ylim([-1.2,1.2])
+
+    line1, = ax.plot([], [], lw=12)
+    line1.set_color("cyan")
+    line2, = ax.plot([], [], lw=12)
+    line3, = ax.plot([], [], lw=12)
+
+    if type(uc)==int:
+        line3.set_color("clear")   #!!!!!!!!!!!!!!!!!!!!!! alpha????
+
+
+    def init():
+        line1.set_data([], [])
+        line2.set_data([], [])
+
+        return line1, line2,
+
+    def animate(i):
+
+        x1 = np.arange(-0.5*epsilon[DF*i]-0.5, 0.5*epsilon[DF*i]+0.5, dx)
+        x2 = np.arange(-0.25*epsilon[DF*i]-0.25, 0.25*epsilon[DF*i]+0.25, dx)
+
+        x3 = np.arange(-25, .25, dx)
+        
+
+        y1 = np.zeros(x1.shape)
+        y2 = np.zeros(x2.shape) + .1
+        y3 = np.zeros(x3.shape) - 0.4
+
+        if c[DF*i] == 2:
+            line2.set_c("red")
+        else:
+            line2.set_c("blue")
+
+        
+
+        line1.set_data(x1,y1)
+        line2.set_data(x2,y2)
+
+        return line1, line2, 
+
+    anim = animation.FuncAnimation(fig, animate, init_func=init, frames=nFrames, interval=50, blit=True, repeat=False)
+    #pdb.set_trace()
+
+    plt.show()
