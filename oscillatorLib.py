@@ -101,7 +101,7 @@ class cardiac(oscillator):
         # Set sensitivity windowing function:
         sensitivityWinType = sensitivityWinParam['sensitivityWinType']
 
-        # 0 implies constant sensitivity of unity:
+        # 0 implies constant sensitivity of unity: 
         if sensitivityWinType == 0:
             self.sensitivity = lambda c: 1
 
@@ -261,6 +261,13 @@ def relativePhase(self, subTheta, subIx):
 
 
 
+##########################################################
+##########################################################
+##########################################################
+
+# Model animations:
 
 
+def animateModel(epsilon, c):
 
+    return 1
