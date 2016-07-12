@@ -269,58 +269,63 @@ def relativePhase(self, subTheta, subIx):
 # Model animations:
 
 
-def animateModel(epsilon, c, uc=0, DF=10, plotFrac=1):
-
-
+def animateCoupledUncoupled(epsilon, c, uc, DF=10, plotFrac=1):
     dx=.001
-
     nFrames = np.int(np.floor(epsilon.size/DF*plotFrac))
-    
     fig = plt.figure(figsize=[8,6])
     ax = plt.axes()
+    lw=12
 
-    cellRadius = 20
     ax.set_xlim([-1.2*np.max(epsilon), 1.2*np.max(epsilon)])
     ax.set_ylim([-1.2,1.2])
-
-    line1, = ax.plot([], [], lw=12)
+    
+    line1, = ax.plot([], [], lw=lw)
     line1.set_color("cyan")
-    line2, = ax.plot([], [], lw=12)
-    line3, = ax.plot([], [], lw=12)
-
-    if type(uc)==int:
-        line3.set_color("clear")   #!!!!!!!!!!!!!!!!!!!!!! alpha????
+    line2, = ax.plot([], [], lw=lw)
+    line3, = ax.plot([], [], lw=lw)
+    line3.set_color("cyan")
+    line4, = ax.plot([], [], lw=lw)
 
 
     def init():
         line1.set_data([], [])
         line2.set_data([], [])
+        line3.set_data([], [])
+        line4.set_data([], [])
 
-        return line1, line2,
+        return line1, line2, line3, line4
 
     def animate(i):
 
         x1 = np.arange(-0.5*epsilon[DF*i]-0.5, 0.5*epsilon[DF*i]+0.5, dx)
         x2 = np.arange(-0.25*epsilon[DF*i]-0.25, 0.25*epsilon[DF*i]+0.25, dx)
 
-        x3 = np.arange(-25, .25, dx)
+        x3 = np.arange(-.5, .5, dx)
+        x4 = np.arange(-.25, .25, dx)
         
 
         y1 = np.zeros(x1.shape)
         y2 = np.zeros(x2.shape) + .1
         y3 = np.zeros(x3.shape) - 0.4
+        y4 = np.zeros(x4.shape) - 0.3
 
         if c[DF*i] == 2:
             line2.set_c("red")
         else:
             line2.set_c("blue")
 
+        if uc[DF*i] == 2:
+            line4.set_c("red")
+        else:
+            line4.set_c("blue")
         
 
         line1.set_data(x1,y1)
         line2.set_data(x2,y2)
+        line3.set_data(x3,y3)
+        line4.set_data(x4,y4)
 
-        return line1, line2, 
+        return line1, line2, line3, line4
 
     anim = animation.FuncAnimation(fig, animate, init_func=init, frames=nFrames, interval=50, blit=True, repeat=False)
     #pdb.set_trace()

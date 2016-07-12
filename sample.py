@@ -25,16 +25,16 @@ maxTime = 45
 ### CELL PARAMETERS:
 staticRate = 0.8
 leakRate = 0.2
-randomStd = 0.1
+randomStd = 0.2
 peakEpsilon = 1
 actionPotentialLength = 0.25
 contractionDelay = 0.05
 peakForce = 1
-peakCouplingRate = 0.6
+peakCouplingRate = 3
 c0 = 0
 sensitivityWinType = 1
-sensitivityMean = 0.85
-sensitivityStd = 0.1
+sensitivityMean = 0.5
+sensitivityStd = 0.05
 cellTitle = "cardiacOscillator_1"
 
 
@@ -46,6 +46,11 @@ minStrain = 0
 maxStrain = 1
 phi0 = 1.5*np.pi
 
+
+omega1 = 0.6 * 2*np.pi
+omega2 = 0.7 * 2*np.pi
+
+
 ####################################
 ####################################
 ####################################
@@ -56,19 +61,19 @@ strainFunctionParameters = {'funcType' : funcType, 'minStrain' : minStrain, 'max
 
 cell = ol.cardiac(dt, maxTime, staticRate, leakRate, randomStd, peakEpsilon, actionPotentialLength, contractionDelay, peakForce, c0, peakCouplingRate, sensitivityWinParam, cellTitle)
 
-omega = 0.6 * 2*np.pi
-sub1 = ol.substrate(dt, maxTime, strainFunctionParameters, omega)
+sub1 = ol.substrate(dt, maxTime, strainFunctionParameters, omega1)
 
-omega = 0.7 * 2*np.pi
-sub2 = ol.substrate(dt, maxTime, strainFunctionParameters, omega)
+sub2 = ol.substrate(dt, maxTime, strainFunctionParameters, omega2)
 
 #cell.simulatePerturbed(sub.epsilon)
 
 
 uncoupled = ol.ap(cell, 0)
+print("step")
 coupled1 = ol.ap(cell, sub1.epsilon)
+print("step")
 coupled2 = ol.ap(cell, sub2.epsilon)
-
+print("step")
 #####################################
 #####################################
 #####################################
@@ -125,6 +130,7 @@ subEventTimeShift = np.zeros(len(cellEvents))
 params = {'cellEvents':cellEvents, 'subEvents':subEvents, 'voltage':voltage, 'startTime':startTime, 'dt':dt, 'useAvailableSubstrateEvents':useAvailableSubstrateEvents, 'nominalSubFreq':nominalSubFreq, 'reactionTime':reactionTime, 'subEventTimeShift':subEventTimeShift, 'maxStrain':maxStrain, 'cellNaturalFreq':cellNaturalFreq, 'title':title, 'experimentTitle':experimentTitle}
 
 
+
 s1 = experimentLib.experiment(params)
 
 u0 = s1.genUnstretchedMeasurement(0)
@@ -132,7 +138,8 @@ m1 = s1.genStretchedMeasurement(1)
 m2 = s1.genStretchedMeasurement(2)
 
 
-ol.animateModel(sub1.epsilon, coupled1.c, DF=500)
+if 0:
+    ol.animateCoupledUncoupled(sub1.epsilon, coupled1.c, uncoupled.c, DF=500)
 
 #sub1.epsilon
 
