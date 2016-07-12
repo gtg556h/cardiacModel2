@@ -30,11 +30,11 @@ peakEpsilon = 1
 actionPotentialLength = 0.25
 contractionDelay = 0.05
 peakForce = 1
-peakCouplingRate = 3
+peakCouplingRate = 500
 c0 = 0
 sensitivityWinType = 1
-sensitivityMean = 0.5
-sensitivityStd = 0.05
+sensitivityMean = 0.4
+sensitivityStd = 0.1
 cellTitle = "cardiacOscillator_1"
 
 
@@ -47,8 +47,8 @@ maxStrain = 1
 phi0 = 1.5*np.pi
 
 
-omega1 = 0.6 * 2*np.pi
-omega2 = 0.7 * 2*np.pi
+omega1 = 0.8 * 2*np.pi
+omega2 = 0.9 * 2*np.pi
 
 
 ####################################
@@ -142,6 +142,17 @@ if 0:
     ol.animateCoupledUncoupled(sub1.epsilon, coupled1.c, uncoupled.c, DF=500)
 
 #sub1.epsilon
+
+
+
+
+
+
+plt.plot(m1.t2, m1.dTheta, m2.t2, m2.dTheta)
+plt.show()
+
+
+
 
 
 
