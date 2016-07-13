@@ -78,7 +78,7 @@ class cardiac(oscillator):
         # Considering Gaussian random walks, where each time step has standard deviation
         # k_random_std, after n timesteps, we have a normal distribution with standard
         # deviation sqrt(n)*k_random_std
-        self.k_random_std = randomStd * np.sqrt(dt) * dt
+        self.k_random_std = randomStd * np.sqrt(dt)# * dt
 
         # k_leak, the leak rate per timestep, is computed such that after n timesteps in a unit time
         # we get a reduction in integrating variable by 1-leakRate:
