@@ -65,13 +65,14 @@ class oscillator(object):
 
 class cardiac(oscillator):
 
-    def __init__(self, dt, maxTime, staticRate=0.8, leakRate = 0.1, randomStd=0.1, peakEpsilon=1, actionPotentialLength=0.25, contractionDelay=0.05, peakForce=1, c0 = 0, peakCouplingRate=0.2, sensitivityWinParam = {'sensitivityWinType' : 0}, title="cardiacOscillator"):
+    def __init__(self, dt, maxTime, staticRate=0.8, leakRate = 0.1, randomStd=0.1, peakEpsilon=1, epsilon_floor=0.5, actionPotentialLength=0.25, contractionDelay=0.05, peakForce=1, c0 = 0, peakCouplingRate=0.2, sensitivityWinParam = {'sensitivityWinType' : 0}, title="cardiacOscillator"):
         
         self.cellEvents = []
         # k_constant computed such that, all other factors aside, we accumulate staticRate of our accumulation
         # variable every unit time
         self.k_constant = staticRate*dt
 
+        
         # For random component:  We want the random step to be a zero mean normal distribution
         # with a standard deviation after a unit time equivalent to randomStd
         # Considering Gaussian random walks, where each time step has standard deviation
@@ -84,7 +85,8 @@ class cardiac(oscillator):
         self.k_leak = 1-(1-leakRate)**(dt)
 
         # k_coup:  The coupling strength.  Scaled based on desired peak coupling
-        self.k_coup = dt * peakCouplingRate / peakEpsilon
+        self.k_coup = dt * peakCouplingRate / (peakEpsilon - epsilon_floor)
+        self.epsilon_floor = epsilon_floor
 
         self.c0 = c0
         self.contractionDelay = contractionDelay
@@ -135,7 +137,7 @@ class cardiac(oscillator):
 
     def stepTime(self):  # Make this a lambda func
 
-        return lambda c, epsilon: (1 - self.k_leak) * c + self.k_constant + numpy.random.normal(0, self.k_random_std) + self.sensitivity(c) * epsilon * self.k_coup
+        return lambda c, epsilon: (1 - self.k_leak) * c + self.k_constant + numpy.random.normal(0, self.k_random_std) + self.sensitivity(c) * np.max([epsilon-self.epsilon_floor, 0]) * self.k_coup
 
     #############################################################
     
@@ -331,3 +333,9 @@ def animateCoupledUncoupled(epsilon, c, uc, DF=10, plotFrac=1):
     #pdb.set_trace()
 
     plt.show()
+
+
+
+
+
+
